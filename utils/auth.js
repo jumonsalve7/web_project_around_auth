@@ -14,15 +14,12 @@ export const register = (email, password) => {
 };
 
 export const authorize = (email, password) => {
-
   return fetch(`${BASE_URL}/signin`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    // Los parámetros se envuelven en un objeto, convertido en un string
-    // JSON y se envían en el cuerpo de la solicitud.
     body: JSON.stringify({ email, password }),
   }).then((res) => {
     return res.ok ? res.json() : Promise.reject(`Error: ${res.status}`);

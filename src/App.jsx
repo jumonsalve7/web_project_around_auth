@@ -1,11 +1,14 @@
 import "./index.css";
-import "../utils/auth";
 import Header from "./components/Header/Header";
 import Main from "./components/Main/Main";
-import Cards from "./components/Cards/Cards";
 import Footer from "./components/Footer/Footer";
 import Login from "./components/Login/Login";
+import Register from "./components/Register/Register";
+
 import * as auth from "../utils/auth";
+import { api } from "../utils/api";
+import { getToken, setToken } from "../utils/token";
+
 import { useState, useEffect } from "react";
 import {
   Routes,
@@ -14,120 +17,122 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import AppContext from "./components/contexts/AppContext";
+
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
-import Register from "./components/Register/Register";
-import { getToken, setToken } from "../utils/token";
-import * as api from "../utils/api";
-import { getInitialCards } from "../utils/api";
 
 export default function App() {
-  const [cards, setCards] = useState([]);
-  const [userData, setUserData] = useState({ email: "", password: "" });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+  const [cards, setCards] = useState([]);
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 🔐 REGISTRO
   const handleRegistration = ({ email, password }) => {
-    console.log("Registro:", email, password);
     auth
       .register(email, password)
-
       .then(() => {
-        -navigate("/cards");
-        +navigate("/login"); // normalmente vas al login después de registrarte
+        console.log("Registro OK");
+        navigate("/login");
       })
-      .catch((err) => console.error("Error en registro:", err));
+      .catch(console.error);
   };
 
+  // 🔐 LOGIN
   const handleLogin = ({ email, password }) => {
-    if (!email || !password) {
-      return;
-    }
-
     auth
       .authorize(email, password)
       .then((data) => {
-        console.log("Login exitoso, datos recibidos:", data);
-        if (data.token) {
-          setToken(data.token);
-
-          setUserData({ email, password });
+        if (data.jwt) {
+          setToken(data.jwt);
           setIsLoggedIn(true);
-          const redirectPath = location.state?.from?.pathname || "/cards";
-          navigate(redirectPath);
+          navigate("/cards");
         }
       })
       .catch(console.error);
   };
 
+  const handleCardLike = (card) => {
+  const isLiked = card.likes.some(i => i._id === currentUser._id);
+
+  api.toggleLikeCard(isLiked, card._id)
+    .then((newCard) => {
+      setCards((prevCards) =>
+        prevCards.map((c) => (c._id === card._id ? newCard : c))
+      );
+    })
+    .catch(console.error);
+};
+
+const handleCardDelete = (card) => {
+  api.deleteCard(card._id)
+    .then(() => {
+      setCards((prevCards) =>
+        prevCards.filter((c) => c._id !== card._id)
+      );
+    })
+    .catch(console.error);
+};
+
+  // 🔄 CARGAR DATOS DESPUÉS DE LOGIN
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    api.getUserInfo().then(setCurrentUser).catch(console.error);
+
+    api.getInitialCards().then(setCards).catch(console.error);
+  }, [isLoggedIn]);
+
+  // 🔄 AUTO LOGIN SI HAY TOKEN
   useEffect(() => {
     const jwt = getToken();
-
-    if (!jwt) {
-      return;
+    if (jwt) {
+      setIsLoggedIn(true);
     }
-
-    api
-      .getUserInfo(jwt)
-      .then(({ email, password }) => {
-        setIsLoggedIn(true);
-        setUserData({ email, password });
-      })
-      .catch(console.error);
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      await getInitialCards().then((data) => {
-        setCards(data);
-      });
-    })();
-  }, []);
   return (
     <>
-      <AppContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
-        <Header />
+      <Header />
 
-        <Routes>
-          <Route
-            path="/cards"
-            element={
-              <ProtectedRoute>
-                <Main cards={cards}/>
-              </ProtectedRoute>
-            }
-          />
+      <Routes>
+        <Route
+          path="/cards"
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <Main cards={cards} currentUser={currentUser} />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/register"
-            element={
-              <ProtectedRoute anonymous>
-                <Register handleRegistration={handleRegistration} />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+              <Register handleRegistration={handleRegistration} />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/login"
-            element={
-              <ProtectedRoute anonymous>
-                <Login handleLogin={handleLogin} />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/login"
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+              <Login handleLogin={handleLogin} />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="*"
-            element={
-              isLoggedIn ? <Navigate to="/cards" /> : <Navigate to="/login" />
-            }
-          />
-        </Routes>
+        <Route
+          path="*"
+          element={
+            isLoggedIn ? <Navigate to="/cards" /> : <Navigate to="/login" />
+          }
+        />
+      </Routes>
 
-        <Footer />
-      </AppContext.Provider>
+      <Footer />
     </>
   );
 }

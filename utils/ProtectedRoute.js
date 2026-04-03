@@ -1,14 +1,15 @@
+import { Navigate, useLocation } from "react-router-dom";
 
-// import { Navigate } from "react-router-dom";
+export default function ProtectedRoute({ children, isLoggedIn, anonymous }) {
+  const location = useLocation();
 
-// const ProtectedRoute = ({ children }) => {
-//   const isAuth = localStorage.getItem("token"); // o tu lógica de auth
+  if (!isLoggedIn && !anonymous) {
+    return <Navigate to="/login" state={{ from: location }} />;
+  }
 
-//   if (!isAuth) {
-//     return <Navigate to="/signin" replace />;
-//   }
+  if (isLoggedIn && anonymous) {
+    return <Navigate to="/cards" />;
+  }
 
-//   return children;
-// };
-
-// export default ProtectedRoute;
+  return children;
+}
