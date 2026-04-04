@@ -4,7 +4,7 @@ import edit from "../../assets/images/edit.png";
 import pencil from "../../assets/images/pencil.png";
 import add from "../../assets/images/add.png";
 import Popup from "./components/Popup/Popup";
-import ImagePopup from "./components/ImagePopup/ImagePopup";
+// import ImagePopup from "./components/Main/ImagePopup";
 import EditProfile from "../Form/EditProfile/EditProfile";
 import EditAvatar from "../Form/EditAvatar/EditAvatar";
 import Card from "../Card/Card";
@@ -13,12 +13,7 @@ export default function Main(props) {
   const [popup, setPopup] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
 
-  const {
-    cards,
-    currentUser,
-    handleCardDelete,
-    handleCardLike,
-  } = props;
+  const { cards, currentUser, onCardDelete, onCardLike } = props;
 
   const editAvatar = { title: "New Photo", children: <EditAvatar /> };
   const newProfilePopup = { title: "Name", children: <EditProfile /> };
@@ -87,8 +82,7 @@ export default function Main(props) {
               key={card._id}
               card={card}
               currentUser={currentUser}
-              handleCardDelete={handleCardDelete}
-              handleCardLike={handleCardLike}
+              onCardLike={onCardLike}
               handleCardClick={handleCardClick}
             />
           ))}
@@ -96,10 +90,7 @@ export default function Main(props) {
       </section>
 
       {selectedCard && (
-        <ImagePopup
-          card={selectedCard}
-          onClose={() => setSelectedCard(null)}
-        />
+        <ImagePopup card={selectedCard} onClose={() => setSelectedCard(null)} />
       )}
     </main>
   );

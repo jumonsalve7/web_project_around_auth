@@ -1,15 +1,21 @@
-import { Navigate, useLocation } from "react-router-dom";
+// ProtectedRoute.jsx
+import React from "react";
+import { Navigate } from "react-router-dom";
+import AppContext from "../../contexts/AppContext"; // Importación correcta
 
-export default function ProtectedRoute({ children, isLoggedIn, anonymous }) {
-  const location = useLocation();
+function ProtectedRoute({ children }) {
+  // Consumimos el contexto que creaste
+  const context = React.useContext(AppContext);
 
-  if (!isLoggedIn && !anonymous) {
-    return <Navigate to="/login" state={{ from: location }} />;
+  // Si por alguna razón el context sigue siendo undefined, 
+  // añadimos una protección para que no explote la app
+  if (!context) {
+    return null; 
   }
 
-  if (isLoggedIn && anonymous) {
-    return <Navigate to="/cards" />;
-  }
+  const { isLoggedIn } = context;
 
-  return children;
+  return isLoggedIn ? children : <Navigate to="/signin" />;
 }
+
+export default ProtectedRoute;

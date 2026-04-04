@@ -17,7 +17,7 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-
+import AppContext from "./AppContext";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 export default function App() {
@@ -53,27 +53,29 @@ export default function App() {
       .catch(console.error);
   };
 
+  // App.jsx
   const handleCardLike = (card) => {
-  const isLiked = card.likes.some(i => i._id === currentUser._id);
+    // Verificamos si ya tiene like (usando encadenamiento opcional ?. por si acaso)
+    const isLiked = card.likes?.some((i) => i._id === currentUser._id);
 
-  api.toggleLikeCard(isLiked, card._id)
-    .then((newCard) => {
-      setCards((prevCards) =>
-        prevCards.map((c) => (c._id === card._id ? newCard : c))
-      );
-    })
-    .catch(console.error);
-};
+    api
+      .toggleLikeCard(card._id, isLiked) // El orden de los parámetros depende de tu api.js
+      .then((newCard) => {
+        setCards((state) =>
+          state.map((c) => (c._id === card._id ? newCard : c)),
+        );
+      })
+      .catch(console.error);
+  };
 
-const handleCardDelete = (card) => {
-  api.deleteCard(card._id)
-    .then(() => {
-      setCards((prevCards) =>
-        prevCards.filter((c) => c._id !== card._id)
-      );
-    })
-    .catch(console.error);
-};
+  const handleCardDelete = (card) => {
+    api
+      .deleteCard(card._id)
+      .then(() => {
+        setCards((prevCards) => prevCards.filter((c) => c._id !== card._id));
+      })
+      .catch(console.error);
+  };
 
   // 🔄 CARGAR DATOS DESPUÉS DE LOGIN
   useEffect(() => {
@@ -94,45 +96,52 @@ const handleCardDelete = (card) => {
 
   return (
     <>
-      <Header />
+      <AppContext.Provider value={{ isLoggedIn, currentUser }}>
+        <Header />
 
-      <Routes>
-        <Route
-          path="/cards"
-          element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
-              <Main cards={cards} currentUser={currentUser} />
-            </ProtectedRoute>
-          }
-        />
+        <Routes>
+          <Route
+            path="/cards"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn}>
+                <Main
+                  cards={cards}
+                  currentUser={currentUser}
+                  onCardLike={handleCardLike} // <--- ¡Añade esto!
+                  onCardDelete={handleCardDelete} // <--- ¡Añade esto!
+                />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/register"
-          element={
-            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
-              <Register handleRegistration={handleRegistration} />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/register"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+                <Register handleRegistration={handleRegistration} />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/login"
-          element={
-            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
-              <Login handleLogin={handleLogin} />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+                <Login handleLogin={handleLogin} />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="*"
-          element={
-            isLoggedIn ? <Navigate to="/cards" /> : <Navigate to="/login" />
-          }
-        />
-      </Routes>
+          <Route
+            path="*"
+            element={
+              isLoggedIn ? <Navigate to="/cards" /> : <Navigate to="/login" />
+            }
+          />
+        </Routes>
 
-      <Footer />
+        <Footer />
+      </AppContext.Provider>
     </>
   );
 }

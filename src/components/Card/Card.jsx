@@ -1,8 +1,19 @@
 import { useState } from "react";
 
-const Card = ({ id, name, link, onEliminar }) => {
-  const [active, setActive] = useState(false);
+const Card = ({ card, currentUser, onCardLike, onCardDelete }) => {
+  const { name, link, _id, likes } = card;
+
+  // Si no hay currentUser todavía, el isLiked es false por defecto
+  const isLiked = currentUser?._id
+    ? (likes || []).some((user) => user._id === currentUser._id)
+    : false;
+
+  // 2. Estados locales
   const [openImage, setOpenImage] = useState(false);
+
+  // 3. Lógica del Like (Basada en los datos que vienen de la API)
+  // Verificamos si el usuario actual ya le dio like a esta tarjeta
+  // Versión protegida
 
   return (
     <div className="cards__content">
@@ -16,20 +27,16 @@ const Card = ({ id, name, link, onEliminar }) => {
       <button
         type="button"
         className="cards__content-trash"
-        onClick={() => onEliminar(id)}
+        onClick={() => onCardDelete(card)}
       ></button>
 
       <div className="cards__content-block">
         <h2 className="cards__content-description">{name}</h2>
-
+        
         <button
-          aria-label="Botón de me gusta"
-          aria-pressed={active}
           type="button"
-          className={`cards__content-like ${
-            active ? "cards__content-like_active" : ""
-          }`}
-          onClick={() => setActive(!active)}
+          className={`cards__content-like ${isLiked ? "cards__content-like_active" : ""}`}
+          onClick={() => onCardLike(card)} // <-- ¡Esta es la clave!
         ></button>
       </div>
 
