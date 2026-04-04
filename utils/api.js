@@ -37,13 +37,15 @@ class Api {
     }).then(this._checkResponse);
   }
 
-  editPhoto(avatar) {
-    return fetch(`${this._baseUrl}/users/me/avatar`, {
-      method: "PATCH",
-      headers: this._headers,
-      body: JSON.stringify({ avatar }),
-    }).then(this._checkResponse);
-  }
+  editPhoto(url) {
+  return fetch(`${this._baseUrl}/users/me/avatar`, {
+    method: "PATCH",
+    headers: this._headers,
+    body: JSON.stringify({
+      avatar: url // <--- Asegúrate de que el nombre de la propiedad sea 'avatar'
+    }),
+  }).then(this._checkResponse);
+}
 
   createCard({ name, link }) {
     return fetch(`${this._baseUrl}/cards`, {
@@ -53,7 +55,8 @@ class Api {
     }).then(this._checkResponse);
   }
 
-  toggleLikeCard(isLiked, cardId) {
+  toggleLikeCard(cardId, isLiked) {
+   
     return fetch(`${this._baseUrl}/cards/${cardId}/likes`, {
       method: isLiked ? "DELETE" : "PUT",
       headers: this._headers,

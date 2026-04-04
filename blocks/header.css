@@ -3,21 +3,25 @@
   margin: auto;
   margin-bottom: 30px;
   display: flex;
+  justify-content: space-between;
   padding-bottom: 30px;
   border-bottom: 1px solid #545454;
 }
+.header__user-email {
+  font-size: 20px;
+  color: white;
+  margin-right: 10px;
+}
 
-.header__register {
+.header__logout {
   text-decoration: none;
   font-size: 20px;
-  color: #ffffff;
-  margin-left: auto;
-}
-.header__link {
-  text-decoration: none;
-  color: #ffffff;
+  margin-top: 20px;
+  cursor: pointer;
+  color: gray;
+  background-color: black
 }
 
-.header__link:hover {
+.header__logout:hover {
   opacity: 0.8;
 }

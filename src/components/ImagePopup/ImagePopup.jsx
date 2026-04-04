@@ -1,4 +1,4 @@
-import close from "../../../assets/images/close.png";
+import close from "../../assets/images/close.png";
 
 export default function ImagePopup({ card, onClose }) {
   if (!card) return null; 

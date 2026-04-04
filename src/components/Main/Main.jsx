@@ -4,7 +4,7 @@ import edit from "../../assets/images/edit.png";
 import pencil from "../../assets/images/pencil.png";
 import add from "../../assets/images/add.png";
 import Popup from "./components/Popup/Popup";
-// import ImagePopup from "./components/Main/ImagePopup";
+import ImagePopup from "../ImagePopup/ImagePopup";
 import EditProfile from "../Form/EditProfile/EditProfile";
 import EditAvatar from "../Form/EditAvatar/EditAvatar";
 import Card from "../Card/Card";
@@ -13,23 +13,70 @@ export default function Main(props) {
   const [popup, setPopup] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
 
-  const { cards, currentUser, onCardDelete, onCardLike } = props;
+  // 1. EXTRAEMOS LAS PROPS (Añadí onUpdateUser y onUpdateAvatar)
+  const {
+    cards,
+    currentUser,
+    onCardDelete,
+    onCardLike,
+    onAddPlaceSubmit,
+    onUpdateUser, // Viene de App.jsx
+    onUpdateAvatar, // Viene de App.jsx
+  } = props;
 
-  const editAvatar = { title: "New Photo", children: <EditAvatar /> };
-  const newProfilePopup = { title: "Name", children: <EditProfile /> };
-  const newCardPopup = { title: "Nuevo lugar", children: <NewCard /> };
+  // Funciones auxiliares para cerrar
+  function handleClosePopup() {
+    setPopup(null);
+  }
 
   function handleOpenPopup(popup) {
     setPopup(popup);
   }
 
-  function handleClosePopup() {
-    setPopup(null);
-  }
-
   function handleCardClick(card) {
     setSelectedCard(card);
   }
+
+  // 2. CONFIGURACIÓN DE POPUPS (Corregidas para usar las props)
+  const newProfilePopup = {
+    title: "Edit Profile",
+    children: (
+      <EditProfile
+        onUpdateUser={(data) => {
+          onUpdateUser(data); // Usamos la prop que extrajimos arriba
+          handleClosePopup();
+        }}
+        onClose={handleClosePopup}
+      />
+    ),
+  };
+
+  // Main.jsx
+
+const editAvatar = {
+  title: "Change profile picture",
+  children: (
+    <EditAvatar 
+      onUpdateAvatar={(data) => {
+        onUpdateAvatar(data);
+        handleClosePopup();
+      }} 
+      onClose={handleClosePopup} 
+    />
+  ),
+};
+  const newCardPopup = {
+    title: "Nuevo lugar",
+    children: (
+      <NewCard
+        onAddPlaceSubmit={(data) => {
+          onAddPlaceSubmit(data);
+          handleClosePopup();
+        }}
+        onClose={handleClosePopup}
+      />
+    ),
+  };
 
   return (
     <main className="content">
@@ -42,6 +89,7 @@ export default function Main(props) {
           />
           <img
             src={pencil}
+            alt="edit avatar"
             className="profile__edit-pencil"
             onClick={() => handleOpenPopup(editAvatar)}
           />
@@ -52,20 +100,18 @@ export default function Main(props) {
           <h3 className="profile__profession">{currentUser.about}</h3>
         </div>
 
-        <button className="profile__edit-button">
-          <img
-            src={edit}
-            className="profile__edit-image"
-            onClick={() => handleOpenPopup(newProfilePopup)}
-          />
+        <button
+          className="profile__edit-button"
+          onClick={() => handleOpenPopup(newProfilePopup)}
+        >
+          <img src={edit} className="profile__edit-image" alt="edit profile" />
         </button>
 
-        <button className="profile__add-button">
-          <img
-            src={add}
-            className="profile__add-image"
-            onClick={() => handleOpenPopup(newCardPopup)}
-          />
+        <button
+          className="profile__add-button"
+          onClick={() => handleOpenPopup(newCardPopup)}
+        >
+          <img src={add} className="profile__add-image" alt="add card" />
         </button>
 
         {popup && (
@@ -83,6 +129,7 @@ export default function Main(props) {
               card={card}
               currentUser={currentUser}
               onCardLike={onCardLike}
+              onCardDelete={onCardDelete}
               handleCardClick={handleCardClick}
             />
           ))}
