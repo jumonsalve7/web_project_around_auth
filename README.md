@@ -1,5 +1,3 @@
-¡Claro que sí! Aquí tienes una versión en inglés, con un tono un poco más profesional ("industry-standard") para que tu perfil de GitHub se vea impecable ante cualquier reclutador internacional.
-
 🚀 Around The U.S. (Authentication & Interactive Gallery)
 A full-featured React application that allows users to explore, share, and manage a gallery of photos from across the United States. This project focuses on secure authentication, state management, and responsive UI.
 

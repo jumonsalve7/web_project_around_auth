@@ -7,26 +7,23 @@ export default function Header({ loggedIn, userEmail, onSignOut }) {
   return (
     <header className="header">
       <img src={logo} alt="Around the U.S. logo" className="header__logo" />
-      
+
       <div className="header__container">
         {/* CASO 1: Si está logueado, muestra el email y el botón de Salir */}
         {loggedIn ? (
           <>
             <span className="header__user-email">{userEmail}</span>
-            <button 
-              className="header__logout" 
-              onClick={onSignOut}
-            >
+            <button className="header__logout" onClick={onSignOut}>
               Logout
             </button>
           </>
         ) : (
           /* CASO 2: Si NO está logueado, cambia entre Login y Register según la URL */
-          <Link 
-            to={location.pathname === "/register" ? "/login" : "/register"} 
+          <Link
+            to={location.pathname === "/register" ? "/login" : "/register"}
             className="header__logout"
           >
-            {location.pathname === "/register" ? "Iniciar sesión" : "Regístrate"}
+            {location.pathname === "/register" ? "Login" : "Register"}
           </Link>
         )}
       </div>
